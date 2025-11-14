@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "998989826059",
+    "project_id": "terra-quest-3a7d3",
+    "storage_bucket": "terra-quest-3a7d3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:998989826059:android:322b163b76e10d4a8c5f0e",
+        "android_client_info": {
+          "package_name": "com.example.iptproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoWLqIBH5uN2R8Q02RnDPUIiaOMZwYE1M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
