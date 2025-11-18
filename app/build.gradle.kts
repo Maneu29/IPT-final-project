@@ -1,6 +1,7 @@
 plugins {
-    alias(libs.plugins.android.application)
-    id ("com.google.gms.google-services")
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -30,6 +31,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
 }
 
 dependencies {
@@ -38,7 +42,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
 
     // Add the dependency for the Firebase Analytics library
-    // When using the BoM, you don't specify versions in Firebase library dependencies
+    // When using the BoM, you don'''t specify versions in Firebase library dependencies
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.android.gms:play-services-auth:21.2.0")

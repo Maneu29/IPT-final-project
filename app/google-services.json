@@ -1,26 +1,44 @@
 {
   "project_info": {
-    "project_number": "998989826059",
-    "project_id": "terra-quest-3a7d3",
-    "storage_bucket": "terra-quest-3a7d3.firebasestorage.app"
+    "project_number": "750522563649",
+    "project_id": "terra-quest-7665a",
+    "storage_bucket": "terra-quest-7665a.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:998989826059:android:322b163b76e10d4a8c5f0e",
+        "mobilesdk_app_id": "1:750522563649:android:6bf8be9dc15df5e795dac0",
         "android_client_info": {
           "package_name": "com.example.iptproject"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "750522563649-4vkhajag7clf0bobjsaba8pdvp0s2oe2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.iptproject",
+            "certificate_hash": "2093ebe708d54d6568eabdcfbf8366bd0ea85249"
+          }
+        },
+        {
+          "client_id": "750522563649-p5ru26jrulfuspkgceb7lbfr0gipj8mo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyAoWLqIBH5uN2R8Q02RnDPUIiaOMZwYE1M"
+          "current_key": "AIzaSyAkVQKbWEKXUwDZHgeECopsGnIHpI2NOQk"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "750522563649-p5ru26jrulfuspkgceb7lbfr0gipj8mo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
