@@ -9,8 +9,8 @@
 
     <ImageView
         android:id="@+id/profileImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="216dp"
+        android:layout_height="209dp"
         android:layout_marginTop="56dp"
         android:background="@drawable/circle_border"
         android:padding="25dp"
@@ -19,14 +19,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:src="@tools:sample/avatars" />
-
-    <ImageView
-        android:id="@+id/pictureUpload"
-        android:layout_width="54dp"
-        android:layout_height="41dp"
-        android:background="@drawable/baseline_upload_file_24"
-        app:layout_constraintBottom_toBottomOf="@+id/profileImage"
-        app:layout_constraintEnd_toEndOf="@+id/profileImage" />
 
     <TextView
         android:id="@+id/username"
