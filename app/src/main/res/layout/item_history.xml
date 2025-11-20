@@ -55,7 +55,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Caption goes here..."
+                    android:hint="Caption goes here..."
+                    android:textColorHint="#CFD8DC"
                     android:textColor="#CFD8DC"
                     android:textSize="14sp" />
 

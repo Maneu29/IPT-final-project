@@ -2,11 +2,13 @@ package com.example.iptproject;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class HomepageActivity extends AppCompatActivity {
 
@@ -15,9 +17,19 @@ public class HomepageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.homepage);
 
-        Log.d("HomepageTest", "HOMEPAGE REACHED! User: " + FirebaseAuth.getInstance().getCurrentUser().getEmail());
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            Log.d("HomepageTest", "HOMEPAGE REACHED! User: " + user.getEmail());
+        } else {
+            Log.e("HomepageTest", "CRITICAL: User is null in HomepageActivity.");
+        }
 
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
+        if (bottomNav == null) {
+            Toast.makeText(this, "Critical error: Bottom navigation not found!", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
 
         // Set the default fragment
         if (savedInstanceState == null) {
@@ -42,6 +54,5 @@ public class HomepageActivity extends AppCompatActivity {
             }
             return false;
         });
-
     }
 }

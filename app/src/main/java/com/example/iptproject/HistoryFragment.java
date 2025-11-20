@@ -31,6 +31,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +45,8 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.OnItemCl
     private List<Travel> completedTravels = new ArrayList<>(); // Keep a local copy
     private Dialog mCurrentDialog; // To hold a reference to the currently open dialog
     private int mEditingPosition = -1; // To know which item is being edited
+    private SharedViewModel sharedViewModel;
+    private ImageView profileImageView;
 
     @Nullable
     @Override
@@ -50,6 +55,7 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.OnItemCl
 
         historyRecyclerView = view.findViewById(R.id.historyRecyclerView);
         historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        profileImageView = view.findViewById(R.id.profileImage);
 
         // Pass this fragment as listener
         historyAdapter = new HistoryAdapter(completedTravels, this);
@@ -62,6 +68,22 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.OnItemCl
             completedTravels.addAll(travels);
             historyAdapter.notifyDataSetChanged();
         });
+
+        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        sharedViewModel.getSelectedImageUri().observe(getViewLifecycleOwner(), uri -> {
+            if (uri != null) {
+                profileImageView.setImageURI(uri);
+            }
+        });
+
+        // Set username from Firebase
+        TextView usernameTextView = view.findViewById(R.id.Username);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
+            usernameTextView.setText(user.getDisplayName());
+        } else if (user != null && user.getEmail() != null) {
+            usernameTextView.setText(user.getEmail());
+        }
 
         return view;
     }

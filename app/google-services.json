@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "750522563649-oh0r44lmvr85v9hco87tig2977lho1gu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.iptproject",
+            "certificate_hash": "bcbcc8892b8bcecc77d4f8eb87cf497c21b98554"
+          }
+        },
+        {
           "client_id": "750522563649-p5ru26jrulfuspkgceb7lbfr0gipj8mo.apps.googleusercontent.com",
           "client_type": 3
         }

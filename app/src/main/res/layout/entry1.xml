@@ -21,16 +21,17 @@
 
     <TextView
         android:id="@+id/textView"
-        android:layout_width="341dp"
-        android:layout_height="81dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:fontFamily="@font/limelight"
         android:text="Adventure begins with a list"
         android:textColor="#FFFFFF"
-        android:textSize="36dp"
+        android:textSize="36sp"
         android:textStyle=""
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.228"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.706" />

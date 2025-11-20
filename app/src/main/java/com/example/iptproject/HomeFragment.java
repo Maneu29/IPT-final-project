@@ -32,8 +32,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.util.ArrayList;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class HomeFragment extends Fragment implements TravelAdapter.OnItemClickListener {
 
@@ -42,6 +42,8 @@ public class HomeFragment extends Fragment implements TravelAdapter.OnItemClickL
     private PendingTravelsViewModel pendingTravelsViewModel;
     private CompletedTravelsViewModel completedTravelsViewModel;
     private Dialog mMarkAsDoneDialog; // To hold a reference to the currently open dialog
+    private ImageView profileImageView;
+    private SharedViewModel sharedViewModel;
 
     @Nullable
     @Override
@@ -53,6 +55,15 @@ public class HomeFragment extends Fragment implements TravelAdapter.OnItemClickL
 
         pendingTravelsViewModel = new ViewModelProvider(requireActivity()).get(PendingTravelsViewModel.class);
         completedTravelsViewModel = new ViewModelProvider(requireActivity()).get(CompletedTravelsViewModel.class);
+        profileImageView = view.findViewById(R.id.profileImage);
+
+        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        sharedViewModel.getSelectedImageUri().observe(getViewLifecycleOwner(), uri -> {
+            if (uri != null) {
+                profileImageView.setImageURI(uri);
+            }
+        });
+
 
         // Initialize with some data if the list is empty
         pendingTravelsViewModel.initializeData();
@@ -64,6 +75,15 @@ public class HomeFragment extends Fragment implements TravelAdapter.OnItemClickL
 
         ImageView fabAdd = view.findViewById(R.id.add);
         fabAdd.setOnClickListener(v -> showAddTravelDialog());
+
+        // Set username from Firebase
+        TextView usernameTextView = view.findViewById(R.id.username);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
+            usernameTextView.setText(user.getDisplayName());
+        } else if (user != null && user.getEmail() != null) {
+            usernameTextView.setText(user.getEmail());
+        }
 
         return view;
     }

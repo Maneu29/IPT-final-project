@@ -10,10 +10,11 @@
     <ImageView
         android:id="@+id/profileImage"
         android:layout_width="216dp"
-        android:layout_height="209dp"
+        android:layout_height="216dp"
         android:layout_marginTop="56dp"
         android:background="@drawable/circle_border"
-        android:padding="25dp"
+        android:clipToOutline="true"
+        android:scaleType="centerCrop"
         android:src="@drawable/user_icon_scaled"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,7 +22,7 @@
         tools:src="@tools:sample/avatars" />
 
     <TextView
-        android:id="@+id/username"
+        android:id="@+id/Username"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
@@ -46,7 +47,7 @@
         android:textColor="#CC9E68"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/username" />
+        app:layout_constraintTop_toBottomOf="@+id/Username" />
 
     <TextView
         android:id="@+id/PendingTravels"
