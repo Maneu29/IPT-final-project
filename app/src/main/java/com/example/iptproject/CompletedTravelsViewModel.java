@@ -1,35 +1,91 @@
 package com.example.iptproject;
 
+import android.util.Log;
+
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class CompletedTravelsViewModel extends ViewModel {
+
+    private static final String TAG = "CompletedTravelsVM";
     private final MutableLiveData<List<Travel>> completedTravels = new MutableLiveData<>(new ArrayList<>());
+    private DatabaseReference databaseReference;
+    private ValueEventListener eventListener;
+
+    public CompletedTravelsViewModel() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String userId = user.getUid();
+            // Point to the 'completed_travels' node under the specific user's ID
+            databaseReference = FirebaseDatabase.getInstance().getReference("users").child(userId).child("completed_travels");
+            attachDatabaseReadListener();
+        } else {
+            Log.e(TAG, "User is not logged in. Cannot fetch data.");
+        }
+    }
 
     public LiveData<List<Travel>> getCompletedTravels() {
         return completedTravels;
     }
 
-    public void addCompletedTravel(Travel travel) {
-        List<Travel> currentList = completedTravels.getValue();
-        if (currentList != null) {
-            currentList.add(0, travel); // Add to the top of the list
-            completedTravels.setValue(currentList);
+    private void attachDatabaseReadListener() {
+        if (eventListener == null) {
+            eventListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    List<Travel> travels = new ArrayList<>();
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        Travel travel = snapshot.getValue(Travel.class);
+                        if (travel != null) {
+                            travel.setId(snapshot.getKey()); // Store the Firebase key
+                            travels.add(travel);
+                        }
+                    }
+                    completedTravels.setValue(travels);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.e(TAG, "Database error: " + databaseError.getMessage());
+                }
+            };
+            databaseReference.addValueEventListener(eventListener);
         }
     }
 
-    public void updateCompletedTravel(int position, String newCaption, String newPhotoUri) {
-        List<Travel> currentList = completedTravels.getValue();
-        if (currentList != null && position >= 0 && position < currentList.size()) {
-            Travel travel = currentList.get(position);
-            travel.setCaption(newCaption);
-            if (newPhotoUri != null) { // Only update photo if a new one is provided
-                travel.setPhotoUri(newPhotoUri);
+    public void addCompletedTravel(Travel travel) {
+        if (databaseReference != null) {
+            String travelId = databaseReference.push().getKey();
+            if (travelId != null) {
+                databaseReference.child(travelId).setValue(travel);
             }
-            completedTravels.setValue(currentList); // This will trigger the observer
+        }
+    }
+
+    public void updateCompletedTravel(Travel travel) {
+        if (databaseReference != null && travel.getId() != null) {
+            databaseReference.child(travel.getId()).setValue(travel);
+        }
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        if (databaseReference != null && eventListener != null) {
+            databaseReference.removeEventListener(eventListener);
         }
     }
 }

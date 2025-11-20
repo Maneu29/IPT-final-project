@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -41,7 +42,7 @@ public class HomeFragment extends Fragment implements TravelAdapter.OnItemClickL
     private TravelAdapter adapter;
     private PendingTravelsViewModel pendingTravelsViewModel;
     private CompletedTravelsViewModel completedTravelsViewModel;
-    private Dialog mMarkAsDoneDialog; // To hold a reference to the currently open dialog
+    private Dialog mMarkAsDoneDialog;
     private ImageView profileImageView;
     private SharedViewModel sharedViewModel;
 
@@ -64,10 +65,6 @@ public class HomeFragment extends Fragment implements TravelAdapter.OnItemClickL
             }
         });
 
-
-        // Initialize with some data if the list is empty
-        pendingTravelsViewModel.initializeData();
-
         pendingTravelsViewModel.getPendingTravels().observe(getViewLifecycleOwner(), travels -> {
             adapter = new TravelAdapter(getContext(), travels, this);
             recyclerViewTravels.setAdapter(adapter);
@@ -76,7 +73,6 @@ public class HomeFragment extends Fragment implements TravelAdapter.OnItemClickL
         ImageView fabAdd = view.findViewById(R.id.add);
         fabAdd.setOnClickListener(v -> showAddTravelDialog());
 
-        // Set username from Firebase
         TextView usernameTextView = view.findViewById(R.id.username);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
@@ -89,34 +85,39 @@ public class HomeFragment extends Fragment implements TravelAdapter.OnItemClickL
     }
 
     private void showAddTravelDialog() {
-        showTravelDialog(-1, null);
+        showTravelDialog(null);
     }
 
     @Override
     public void onEditClick(int position) {
-        showTravelDialog(position, pendingTravelsViewModel.getPendingTravels().getValue().get(position));
+        Travel travelToEdit = pendingTravelsViewModel.getPendingTravels().getValue().get(position);
+        showTravelDialog(travelToEdit);
     }
 
     @Override
     public void onDeleteClick(int position) {
         Travel travelToDelete = pendingTravelsViewModel.getPendingTravels().getValue().get(position);
-
-        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        new AlertDialog.Builder(requireContext())
                 .setTitle("Delete Destination")
-                .setMessage("Are you sure you want to delete "
-                        + travelToDelete.getCity() + ", " + travelToDelete.getPlace() + "?")
+                .setMessage("Are you sure you want to delete " + travelToDelete.getCity() + ", " + travelToDelete.getPlace() + "?")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    pendingTravelsViewModel.removeTravel(position);
+                    pendingTravelsViewModel.removeTravel(travelToDelete);
                     Toast.makeText(getContext(), travelToDelete.getCity() + " deleted", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", null)
-                .setIcon(android.R.drawable.ic_delete)
+                .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
     }
 
-    private void showTravelDialog(int position, Travel existingTravel) {
+    private void showTravelDialog(Travel existingTravel) {
         Dialog dialog = new Dialog(requireContext());
         dialog.setContentView(R.layout.dialog_add_travel);
+
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
 
         EditText etCity = dialog.findViewById(R.id.etCity);
         EditText etPlace = dialog.findViewById(R.id.etPlace);
@@ -125,19 +126,9 @@ public class HomeFragment extends Fragment implements TravelAdapter.OnItemClickL
 
         boolean isEdit = (existingTravel != null);
 
-        Window window = dialog.getWindow();
-        if (window != null) {
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            window.setGravity(Gravity.TOP);
-            window.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#800D2A2A")));
-        }
-
         if (isEdit) {
             etCity.setText(existingTravel.getCity());
             etPlace.setText(existingTravel.getPlace());
-        } else {
-            etCity.setText("");
-            etPlace.setText("");
         }
 
         btnDone.setOnClickListener(v -> {
@@ -150,11 +141,12 @@ public class HomeFragment extends Fragment implements TravelAdapter.OnItemClickL
             }
 
             if (isEdit) {
-                pendingTravelsViewModel.updateTravel(position, new Travel(city, place));
+                existingTravel.setCity(city);
+                existingTravel.setPlace(place);
+                pendingTravelsViewModel.updateTravel(existingTravel);
                 Toast.makeText(getContext(), "Updated!", Toast.LENGTH_SHORT).show();
             } else {
                 pendingTravelsViewModel.addTravel(new Travel(city, place));
-                recyclerViewTravels.scrollToPosition(pendingTravelsViewModel.getPendingTravels().getValue().size() - 1);
                 Toast.makeText(getContext(), "Added " + city, Toast.LENGTH_SHORT).show();
             }
             dialog.dismiss();
@@ -166,55 +158,41 @@ public class HomeFragment extends Fragment implements TravelAdapter.OnItemClickL
 
     @Override
     public void onDoneClick(int position) {
-        showMarkAsDoneDialog(position);
+        showMarkAsDoneDialog(pendingTravelsViewModel.getPendingTravels().getValue().get(position));
     }
 
-    private void showMarkAsDoneDialog(int position) {
-        Travel travel = pendingTravelsViewModel.getPendingTravels().getValue().get(position);
-
+    private void showMarkAsDoneDialog(Travel travel) {
         final Dialog dialog = new Dialog(requireContext());
         dialog.setContentView(R.layout.dialog_mark_done);
-        mMarkAsDoneDialog = dialog; // Store reference to the dialog
-        dialog.setOnDismissListener(d -> mMarkAsDoneDialog = null); // Clean up reference on dismiss
+        mMarkAsDoneDialog = dialog;
+        dialog.setOnDismissListener(d -> mMarkAsDoneDialog = null);
 
         Window window = dialog.getWindow();
         if (window != null) {
             window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            window.setGravity(Gravity.TOP);
-            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT)); // Or a semi-transparent color
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
 
         TextView tvCityName = dialog.findViewById(R.id.tvCityName);
-        if (tvCityName != null) {
-            String city = travel.getCity();
-            String place = travel.getPlace().toUpperCase();
-            String fullText = city + "\n" + place;
-
-            SpannableString spannableString = new SpannableString(fullText);
-            // Make city BOLD
-            spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, city.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            // Make place smaller
-            spannableString.setSpan(new RelativeSizeSpan(0.8f), city.length() + 1, fullText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            tvCityName.setText(spannableString);
-        }
-
         ImageView imgPhoto = dialog.findViewById(R.id.imgAttachedPhoto);
         EditText etCaption = dialog.findViewById(R.id.etCaption);
         TextView tvAttach = dialog.findViewById(R.id.tvAttachText);
         Button btnDone = dialog.findViewById(R.id.btnFinalDone);
         ImageButton btnClose = dialog.findViewById(R.id.btnCloseDialog);
 
+        tvCityName.setText(travel.getCity() + "\n" + travel.getPlace().toUpperCase());
+
         tvAttach.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setType("image/*");
-            startActivityForResult(intent, 100); // Request code is simple now
+            startActivityForResult(intent, 100);
         });
 
         imgPhoto.setOnClickListener(v -> tvAttach.performClick());
 
         btnDone.setOnClickListener(v -> {
             String caption = etCaption.getText().toString().trim();
-            String photoUri = (String) imgPhoto.getTag(); // Get URI from the image view's tag
+            String photoUri = (String) imgPhoto.getTag();
 
             if (photoUri == null) {
                 Toast.makeText(getContext(), "Please attach a photo", Toast.LENGTH_SHORT).show();
@@ -224,8 +202,7 @@ public class HomeFragment extends Fragment implements TravelAdapter.OnItemClickL
             travel.setPhotoUri(photoUri);
             travel.setCaption(caption.isEmpty() ? "It was an amazing experience!" : caption);
 
-            pendingTravelsViewModel.removeTravel(position);
-            completedTravelsViewModel.addCompletedTravel(travel);
+            pendingTravelsViewModel.moveTravelToCompleted(travel, completedTravelsViewModel);
 
             BottomNavigationView bottomNav = requireActivity().findViewById(R.id.bottomNavigationView);
             if (bottomNav != null) {
@@ -250,9 +227,7 @@ public class HomeFragment extends Fragment implements TravelAdapter.OnItemClickL
                 ImageView img = dialog.findViewById(R.id.imgAttachedPhoto);
                 if (img != null) {
                     img.setImageURI(uri);
-                    img.setTag(uri.toString()); // Store the URI string in the dialog's tag
-
-                    // Hide the text
+                    img.setTag(uri.toString());
                     TextView tvAttach = dialog.findViewById(R.id.tvAttachText);
                     if (tvAttach != null) {
                         tvAttach.setVisibility(View.GONE);

@@ -43,8 +43,7 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.OnItemCl
     private HistoryAdapter historyAdapter;
     private CompletedTravelsViewModel viewModel;
     private List<Travel> completedTravels = new ArrayList<>(); // Keep a local copy
-    private Dialog mCurrentDialog; // To hold a reference to the currently open dialog
-    private int mEditingPosition = -1; // To know which item is being edited
+    private Dialog mCurrentDialog;
     private SharedViewModel sharedViewModel;
     private ImageView profileImageView;
 
@@ -57,12 +56,10 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.OnItemCl
         historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         profileImageView = view.findViewById(R.id.profileImage);
 
-        // Pass this fragment as listener
         historyAdapter = new HistoryAdapter(completedTravels, this);
         historyRecyclerView.setAdapter(historyAdapter);
 
         viewModel = new ViewModelProvider(requireActivity()).get(CompletedTravelsViewModel.class);
-
         viewModel.getCompletedTravels().observe(getViewLifecycleOwner(), travels -> {
             completedTravels.clear();
             completedTravels.addAll(travels);
@@ -76,7 +73,6 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.OnItemCl
             }
         });
 
-        // Set username from Firebase
         TextView usernameTextView = view.findViewById(R.id.Username);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
@@ -90,21 +86,16 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.OnItemCl
 
     @Override
     public void onEditClick(int position) {
-        mEditingPosition = position;
         Travel travelToEdit = completedTravels.get(position);
 
         final Dialog dialog = new Dialog(requireContext());
         dialog.setContentView(R.layout.dialog_mark_done);
         mCurrentDialog = dialog;
-        dialog.setOnDismissListener(d -> {
-            mCurrentDialog = null;
-            mEditingPosition = -1;
-        });
+        dialog.setOnDismissListener(d -> mCurrentDialog = null);
 
         Window window = dialog.getWindow();
         if (window != null) {
             window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            window.setGravity(Gravity.TOP);
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
 
@@ -115,32 +106,21 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.OnItemCl
         Button btnDone = dialog.findViewById(R.id.btnFinalDone);
         ImageButton btnClose = dialog.findViewById(R.id.btnCloseDialog);
 
-        // --- Pre-fill the dialog with existing data ---
-        if (tvCityName != null) {
-            String city = travelToEdit.getCity();
-            String place = travelToEdit.getPlace().toUpperCase();
-            String fullText = city + "\n" + place;
-
-            SpannableString spannableString = new SpannableString(fullText);
-            spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, city.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            spannableString.setSpan(new RelativeSizeSpan(0.8f), city.length() + 1, fullText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            tvCityName.setText(spannableString);
-        }
+        tvCityName.setText(travelToEdit.getCity() + "\n" + travelToEdit.getPlace().toUpperCase());
 
         if (travelToEdit.getPhotoUri() != null) {
             imgPhoto.setImageURI(Uri.parse(travelToEdit.getPhotoUri()));
-            tvAttach.setVisibility(View.GONE); // Hide "Attach" text if there's already a photo
+            tvAttach.setVisibility(View.GONE);
         }
-        imgPhoto.setTag(travelToEdit.getPhotoUri()); // Set the initial URI
+        imgPhoto.setTag(travelToEdit.getPhotoUri());
 
         etCaption.setText(travelToEdit.getCaption());
-        btnDone.setText("Save"); // Change button text to indicate an edit
+        btnDone.setText("Save");
 
-        // --- Handle Clicks ---
         View.OnClickListener attachListener = v -> {
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setType("image/*");
-            startActivityForResult(intent, 200); // Use a different request code for editing
+            startActivityForResult(intent, 200);
         };
         tvAttach.setOnClickListener(attachListener);
         imgPhoto.setOnClickListener(attachListener);
@@ -149,7 +129,10 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.OnItemCl
             String newCaption = etCaption.getText().toString().trim();
             String newPhotoUri = (String) imgPhoto.getTag();
 
-            viewModel.updateCompletedTravel(mEditingPosition, newCaption, newPhotoUri);
+            travelToEdit.setCaption(newCaption);
+            travelToEdit.setPhotoUri(newPhotoUri);
+
+            viewModel.updateCompletedTravel(travelToEdit);
             dialog.dismiss();
             Toast.makeText(getContext(), "Changes Saved", Toast.LENGTH_SHORT).show();
         });
@@ -162,7 +145,7 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.OnItemCl
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
-            if (requestCode == 200) { // Check for the edit request code
+            if (requestCode == 200) {
                 Uri uri = data.getData();
                 if (mCurrentDialog != null) {
                     ImageView img = mCurrentDialog.findViewById(R.id.imgAttachedPhoto);

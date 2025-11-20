@@ -1,26 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:background="#0D2A2A"
-    android:paddingStart="40dp"
-    android:paddingEnd="40dp"
-    android:paddingTop="50dp"
-    android:paddingBottom="50dp"
-    android:layout_marginTop="100dp" >
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:layout_marginTop="200dp">
 
     <!-- Title + Close Button -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="40dp">
+        android:layout_marginBottom="24dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:text="Adding Travels..."
+            android:layout_centerInParent="true"
+            android:text="Add Destination"
             android:textColor="#FFFFFF"
             android:textSize="22sp"
             android:textStyle="bold" />
@@ -30,10 +28,11 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Close dialog"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
-            android:tint="#FF5252"
-            android:scaleType="centerInside" />
+            app:tint="#FF5252" />
     </RelativeLayout>
 
     <!-- City -->
@@ -41,34 +40,40 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="City"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:layout_marginBottom="12dp" />
+        android:textColor="#B0BEC5"
+        android:textSize="14sp" />
 
     <EditText
         android:id="@+id/etCity"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:background="#546E7A"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/edittext_underline"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         android:textColor="#FFFFFF"
-        android:layout_marginBottom="32dp" />
+        android:textSize="18sp" />
 
     <!-- Place -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Place"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:layout_marginBottom="12dp" />
+        android:textColor="#B0BEC5"
+        android:textSize="14sp" />
 
     <EditText
         android:id="@+id/etPlace"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:background="#546E7A"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/edittext_underline"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         android:textColor="#FFFFFF"
-        android:layout_marginBottom="50dp" />
+        android:textSize="18sp" />
 
     <!-- Done Button -->
     <Button
@@ -79,7 +84,6 @@
         android:text="Done"
         android:textColor="#000000"
         android:textSize="18sp"
-        android:textStyle="bold"
-        android:elevation="6dp" />
+        android:textStyle="bold" />
 
 </LinearLayout>
