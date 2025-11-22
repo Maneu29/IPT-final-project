@@ -21,11 +21,13 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private EditText editTextEmail, editTextPassword;
+    private EditText editTextFullName, editTextEmail, editTextPassword;
     private Button btnRegister;
     private TextView btnLoginNow;
     private ImageView googleSignInButton, showPasswordButton;
@@ -42,6 +44,7 @@ public class RegisterActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         // Initialize views
+        editTextFullName = findViewById(R.id.editTextFullName);
         editTextEmail = findViewById(R.id.editTextTextEmailAddress);
         editTextPassword = findViewById(R.id.editTextTextPassword);
         btnRegister = findViewById(R.id.button3);
@@ -49,37 +52,48 @@ public class RegisterActivity extends AppCompatActivity {
         googleSignInButton = findViewById(R.id.googleIcon);
         showPasswordButton = findViewById(R.id.showPasswordButton);
 
-        // Google Sign-In setup
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
-        // Click listeners
         googleSignInButton.setOnClickListener(v -> signInWithGoogle());
-        btnLoginNow.setOnClickListener(v -> finish()); // Just go back to login
+        btnLoginNow.setOnClickListener(v -> finish());
         setupPasswordVisibilityToggle();
 
-        // Email/Password Registration
         btnRegister.setOnClickListener(v -> {
+            String fullName = editTextFullName.getText().toString().trim();
             String email = editTextEmail.getText().toString().trim();
             String password = editTextPassword.getText().toString().trim();
 
-            if (email.isEmpty() || password.isEmpty()) {
+            if (fullName.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
             if (password.length() < 6) {
-                Toast.makeText(this, "Password must be ≥ 6 characters", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             mAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            Toast.makeText(RegisterActivity.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
-                            goToHomepage(); // Clears back stack and goes to main app
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            if (user != null) {
+                                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                        .setDisplayName(fullName)
+                                        .build();
+                                user.updateProfile(profileUpdates).addOnCompleteListener(profileTask -> {
+                                    if (profileTask.isSuccessful()) {
+                                        Toast.makeText(RegisterActivity.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
+                                        goToHomepage();
+                                    }
+                                });
+                            } else {
+                                // Fallback in case user is null, though unlikely
+                                goToHomepage();
+                            }
                         } else {
                             String error = task.getException() != null ?
                                     task.getException().getMessage() : "Unknown error";
@@ -89,15 +103,12 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    // Password visibility toggle
     private void setupPasswordVisibilityToggle() {
         showPasswordButton.setOnClickListener(v -> {
             if (editTextPassword.getTransformationMethod().equals(PasswordTransformationMethod.getInstance())) {
-                // Show password
                 editTextPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
                 showPasswordButton.setImageResource(R.drawable.baseline_visibility_24);
             } else {
-                // Hide password
                 editTextPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
                 showPasswordButton.setImageResource(R.drawable.baseline_visibility_off_24);
             }
@@ -105,7 +116,6 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    // Google Sign-In
     private void signInWithGoogle() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
@@ -114,7 +124,6 @@ public class RegisterActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == RC_SIGN_IN) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
@@ -141,12 +150,10 @@ public class RegisterActivity extends AppCompatActivity {
                 });
     }
 
-    // THIS IS THE MOST IMPORTANT PART — clears onboarding & register from back stack
     private void goToHomepage() {
         Intent intent = new Intent(RegisterActivity.this, HomepageActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }
-    
 }

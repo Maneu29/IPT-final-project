@@ -1,14 +1,9 @@
 package com.example.iptproject;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 public class HomepageActivity extends AppCompatActivity {
 
@@ -17,21 +12,10 @@ public class HomepageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.homepage);
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            Log.d("HomepageTest", "HOMEPAGE REACHED! User: " + user.getEmail());
-        } else {
-            Log.e("HomepageTest", "CRITICAL: User is null in HomepageActivity.");
-        }
-
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
-        if (bottomNav == null) {
-            Toast.makeText(this, "Critical error: Bottom navigation not found!", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
 
-        // Set the default fragment
+        // Set the default fragment only when the activity is first created.
+        // This prevents creating a new fragment on top of the restored one on rotation.
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
         }
@@ -40,6 +24,8 @@ public class HomepageActivity extends AppCompatActivity {
             Fragment selectedFragment = null;
             int itemId = item.getItemId();
 
+            // Create a new instance of the fragment to be displayed.
+            // This is simple and robust.
             if (itemId == R.id.home) {
                 selectedFragment = new HomeFragment();
             } else if (itemId == R.id.history) {
@@ -49,6 +35,7 @@ public class HomepageActivity extends AppCompatActivity {
             }
 
             if (selectedFragment != null) {
+                // Replace the existing fragment with the new one.
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment).commit();
                 return true;
             }

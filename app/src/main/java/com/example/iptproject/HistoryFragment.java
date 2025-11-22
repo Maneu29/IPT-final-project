@@ -73,15 +73,27 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.OnItemCl
             }
         });
 
-        TextView usernameTextView = view.findViewById(R.id.Username);
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
-            usernameTextView.setText(user.getDisplayName());
-        } else if (user != null && user.getEmail() != null) {
-            usernameTextView.setText(user.getEmail());
-        }
+        updateUsername(view);
 
         return view;
+    }
+
+    private void updateUsername(View view) {
+        TextView usernameTextView = view.findViewById(R.id.Username);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String displayName = user.getDisplayName();
+            if (displayName != null && !displayName.trim().isEmpty()) {
+                String firstName = displayName.trim().split(" ")[0];
+                usernameTextView.setText(firstName);
+            } else if (user.getEmail() != null) {
+                usernameTextView.setText(user.getEmail().split("@")[0]);
+            } else {
+                usernameTextView.setText("User");
+            }
+        } else {
+            usernameTextView.setText("Guest");
+        }
     }
 
     @Override

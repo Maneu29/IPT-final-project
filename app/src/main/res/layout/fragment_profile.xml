@@ -21,6 +21,19 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:src="@tools:sample/avatars" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabEditProfile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:contentDescription="Edit Profile"
+        android:src="@android:drawable/ic_menu_edit"
+        app:backgroundTint="#CC9E68"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toBottomOf="@+id/profileImage"
+        app:layout_constraintEnd_toEndOf="@+id/profileImage"
+        app:iconTint="@android:color/white" />
+
     <TextView
         android:id="@+id/Username"
         android:layout_width="wrap_content"
@@ -42,7 +55,12 @@
         android:layout_marginTop="32dp"
         android:layout_marginEnd="30dp"
         android:background="#204343"
-        android:padding="10dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
         android:text="TOTAL PLACES TRAVELED: 0"
         android:textColor="#CC9E68"
         app:layout_constraintEnd_toEndOf="parent"
@@ -57,7 +75,12 @@
         android:layout_marginTop="24dp"
         android:layout_marginEnd="30dp"
         android:background="#204343"
-        android:padding="10dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
         android:text="PENDING TRAVELS: 0"
         android:textColor="#CC9E68"
         app:layout_constraintEnd_toEndOf="parent"

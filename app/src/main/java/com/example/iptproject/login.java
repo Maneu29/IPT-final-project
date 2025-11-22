@@ -2,8 +2,11 @@ package com.example.iptproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -12,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -43,7 +47,6 @@ public class login extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        // Initialize views
         editTextEmail = findViewById(R.id.editTextTextEmailAddress);
         editTextPassword = findViewById(R.id.editTextTextPassword);
         btnLogin = findViewById(R.id.Loginbtn2);
@@ -52,23 +55,19 @@ public class login extends AppCompatActivity {
         btnForgot = findViewById(R.id.forgotButton);
         googleSignInButton = findViewById(R.id.googleIcon);
 
-        // Google Sign-In setup
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
-        // Click listeners
         googleSignInButton.setOnClickListener(v -> signInWithGoogle());
-        btnGoToRegister.setOnClickListener(v -> {
-            startActivity(new Intent(login.this, RegisterActivity.class));
-            // Optional: finish(); if you don't want to come back here with back button
-        });
-        btnForgot.setOnClickListener(v -> Toast.makeText(this, "Forgot password coming soon", Toast.LENGTH_SHORT).show());
+        btnGoToRegister.setOnClickListener(v -> startActivity(new Intent(login.this, RegisterActivity.class)));
+
+        btnForgot.setOnClickListener(v -> showForgotPasswordDialog());
+
         setupPasswordVisibilityToggle();
 
-        // Email/Password Login
         btnLogin.setOnClickListener(v -> {
             String email = editTextEmail.getText().toString().trim();
             String password = editTextPassword.getText().toString().trim();
@@ -82,7 +81,7 @@ public class login extends AppCompatActivity {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             Toast.makeText(login.this, "Login Successful", Toast.LENGTH_SHORT).show();
-                            goToHomepage(); // This clears the entire back stack
+                            goToHomepage();
                         } else {
                             String message = task.getException() != null ?
                                     task.getException().getMessage() : "Unknown error";
@@ -92,24 +91,49 @@ public class login extends AppCompatActivity {
         });
     }
 
-    // Toggle password visibility
+    private void showForgotPasswordDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Forgot Password");
+        
+        final EditText emailInput = new EditText(this);
+        emailInput.setHint("Enter your registered email");
+        builder.setView(emailInput);
+
+        builder.setPositiveButton("Send Link", (dialog, which) -> {
+            String email = emailInput.getText().toString().trim();
+            if (TextUtils.isEmpty(email)) {
+                Toast.makeText(getApplicationContext(), "Please enter your email", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            mAuth.sendPasswordResetEmail(email)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(login.this, "Password reset link sent to your email", Toast.LENGTH_LONG).show();
+                        } else {
+                            String message = task.getException() != null ? task.getException().getMessage() : "Failed to send reset email.";
+                            Toast.makeText(login.this, "Error: " + message, Toast.LENGTH_LONG).show();
+                        }
+                    });
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
     private void setupPasswordVisibilityToggle() {
         showPasswordButton.setOnClickListener(v -> {
             if (editTextPassword.getTransformationMethod().equals(PasswordTransformationMethod.getInstance())) {
-                // Show password
                 editTextPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
                 showPasswordButton.setImageResource(R.drawable.baseline_visibility_24);
             } else {
-                // Hide password
                 editTextPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
                 showPasswordButton.setImageResource(R.drawable.baseline_visibility_off_24);
             }
-            // Move cursor to end
             editTextPassword.setSelection(editTextPassword.getText().length());
         });
     }
 
-    // Google Sign-In
     private void signInWithGoogle() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
@@ -144,7 +168,6 @@ public class login extends AppCompatActivity {
                 });
     }
 
-    // CRITICAL: This clears onboarding/login from back stack
     private void goToHomepage() {
         Intent intent = new Intent(login.this, HomepageActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
